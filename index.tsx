@@ -1849,7 +1849,7 @@ export function compiler(
   const jsx = compile(markdown)
 
   if (footnotes.length) {
-    jsx.props.children.push(
+    const Footer = (
       <footer key="footer">
         {footnotes.map(function createFootnote(def) {
           return (
@@ -1861,6 +1861,9 @@ export function compiler(
         })}
       </footer>
     )
+    if (Array.isArray(jsx)) {
+      jsx.push(Footer)
+    } else jsx.props.children.push(Footer)
   }
 
   return jsx
