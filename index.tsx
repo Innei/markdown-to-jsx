@@ -85,6 +85,9 @@ export namespace MarkdownToJSX {
   } & {
     [customComponent: string]: Override
   }
+  export type ExtendsRules = {
+    [key: string]: Partial<Rule>
+  }
 
   export type Options = Partial<{
     /**
@@ -167,7 +170,7 @@ export namespace MarkdownToJSX {
      */
     additionalParserRules: MarkdownToJSX.Rules
 
-    extendsRules: Partial<MarkdownToJSX.Rules>
+    extendsRules: ExtendsRules
   }>
 }
 
