@@ -23,7 +23,6 @@
     "LICENSE",
     "README.md"
   ],
-  "exports": "./dist/index.modern.js",
   "main": "dist/index.js",
   "module": "dist/index.module.js",
   "source": "index.tsx",
