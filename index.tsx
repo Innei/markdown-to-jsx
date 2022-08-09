@@ -263,29 +263,29 @@ const DO_NOT_PROCESS_HTML_ELEMENTS = ['style', 'script']
  *                           ==================
  *                                   ↳ someBigNumber: "123456789123456789"
  */
-export const ATTR_EXTRACTOR_R =
+const ATTR_EXTRACTOR_R =
   /([-A-Z0-9_:]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|(?:\{((?:\\.|{[^}]*?}|[^}])*)\})))?/gi
 
 /** TODO: Write explainers for each of these */
 
-export const AUTOLINK_MAILTO_CHECK_R = /mailto:/i
-export const BLOCK_END_R = /\n{2,}$/
-export const BLOCKQUOTE_R = /^( *>[^\n]+(\n[^\n]+)*\n*)+\n{2,}/
-export const BLOCKQUOTE_TRIM_LEFT_MULTILINE_R = /^ *> ?/gm
-export const BREAK_LINE_R = /^ {2,}\n/
-export const BREAK_THEMATIC_R = /^(?:( *[-*_]) *){3,}(?:\n *)+\n/
-export const CODE_BLOCK_FENCED_R =
+const AUTOLINK_MAILTO_CHECK_R = /mailto:/i
+const BLOCK_END_R = /\n{2,}$/
+const BLOCKQUOTE_R = /^( *>[^\n]+(\n[^\n]+)*\n*)+\n{2,}/
+const BLOCKQUOTE_TRIM_LEFT_MULTILINE_R = /^ *> ?/gm
+const BREAK_LINE_R = /^ {2,}\n/
+const BREAK_THEMATIC_R = /^(?:( *[-*_]) *){3,}(?:\n *)+\n/
+const CODE_BLOCK_FENCED_R =
   /^\s*(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n *)+\n?/
-export const CODE_BLOCK_R = /^(?: {4}[^\n]+\n*)+(?:\n *)+\n?/
-export const CODE_INLINE_R = /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/
-export const CONSECUTIVE_NEWLINE_R = /^(?:\n *)*\n/
-export const CR_NEWLINE_R = /\r\n?/g
-export const FOOTNOTE_R = /^\[\^([^\]]+)](:.*)\n/
-export const FOOTNOTE_REFERENCE_R = /^\[\^([^\]]+)]/
-export const FORMFEED_R = /\f/g
-export const GFM_TASK_R = /^\s*?\[(x|\s)\]/
-export const HEADING_R = /^ *(#{1,6}) *([^\n]+?)(?: +#*)?(?:\n *)*(?:\n|$)/
-export const HEADING_SETEXT_R = /^([^\n]+)\n *(=|-){3,} *(?:\n *)+\n/
+const CODE_BLOCK_R = /^(?: {4}[^\n]+\n*)+(?:\n *)+\n?/
+const CODE_INLINE_R = /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/
+const CONSECUTIVE_NEWLINE_R = /^(?:\n *)*\n/
+const CR_NEWLINE_R = /\r\n?/g
+const FOOTNOTE_R = /^\[\^([^\]]+)](:.*)\n/
+const FOOTNOTE_REFERENCE_R = /^\[\^([^\]]+)]/
+const FORMFEED_R = /\f/g
+const GFM_TASK_R = /^\s*?\[(x|\s)\]/
+const HEADING_R = /^ *(#{1,6}) *([^\n]+?)(?: +#*)?(?:\n *)*(?:\n|$)/
+const HEADING_SETEXT_R = /^([^\n]+)\n *(=|-){3,} *(?:\n *)+\n/
 
 /**
  * Explanation:
@@ -309,57 +309,55 @@ export const HEADING_SETEXT_R = /^([^\n]+)\n *(=|-){3,} *(?:\n *)+\n/
  * 6. Capture excess newlines afterward
  *    \n*
  */
-export const HTML_BLOCK_ELEMENT_R =
+const HTML_BLOCK_ELEMENT_R =
   /^ *(?!<[a-z][^ >/]* ?\/>)<([a-z][^ >/]*) ?([^>]*)\/{0}>\n?(\s*(?:<\1[^>]*?>[\s\S]*?<\/\1>|(?!<\1)[\s\S])*?)<\/\1>\n*/i
 
-export const HTML_CHAR_CODE_R = /&([a-z]+);/g
+const HTML_CHAR_CODE_R = /&([a-z]+);/g
 
-export const HTML_COMMENT_R = /^<!--[\s\S]*?(?:-->)/
+const HTML_COMMENT_R = /^<!--[\s\S]*?(?:-->)/
 
 /**
  * borrowed from React 15(https://github.com/facebook/react/blob/894d20744cba99383ffd847dbd5b6e0800355a5c/src/renderers/dom/shared/HTMLDOMPropertyConfig.js)
  */
-export const HTML_CUSTOM_ATTR_R = /^(data|aria|x)-[a-z_][a-z\d_.-]*$/
+const HTML_CUSTOM_ATTR_R = /^(data|aria|x)-[a-z_][a-z\d_.-]*$/
 
-export const HTML_SELF_CLOSING_ELEMENT_R =
+const HTML_SELF_CLOSING_ELEMENT_R =
   /^ *<([a-z][a-z0-9:]*)(?:\s+((?:<.*?>|[^>])*))?\/?>(?!<\/\1>)(\s*\n)?/i
-export const INTERPOLATION_R = /^\{.*\}$/
-export const LINK_AUTOLINK_BARE_URL_R = /^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/
-export const LINK_AUTOLINK_MAILTO_R = /^<([^ >]+@[^ >]+)>/
-export const LINK_AUTOLINK_R = /^<([^ >]+:\/[^ >]+)>/
-export const LIST_ITEM_END_R = / *\n+$/
-export const LIST_LOOKBEHIND_R = /(?:^|\n)( *)$/
-export const CAPTURE_LETTER_AFTER_HYPHEN = /-([a-z])?/gi
-export const NP_TABLE_R =
-  /^(.*\|?.*)\n *(\|? *[-:]+ *\|[-| :]*)\n((?:.*\|.*\n)*)\n?/
-export const PARAGRAPH_R = /^((?:[^\n]|\n(?! *\n))+)(?:\n *)+\n/
-export const REFERENCE_IMAGE_OR_LINK = /^\[([^\]]*)\]:\s*(\S+)\s*("([^"]*)")?/
-export const REFERENCE_IMAGE_R = /^!\[([^\]]*)\] ?\[([^\]]*)\]/
-export const REFERENCE_LINK_R = /^\[([^\]]*)\] ?\[([^\]]*)\]/
-export const SQUARE_BRACKETS_R = /(\[|\])/g
-export const SHOULD_RENDER_AS_BLOCK_R = /(\n|^[-*]\s|^#|^ {2,}|^-{2,}|^>\s)/
-export const TAB_R = /\t/g
-export const TABLE_SEPARATOR_R = /^ *\| */
-export const TABLE_TRIM_PIPES = /(^ *\||\| *$)/g
-export const TABLE_CELL_END_TRIM = / *$/
-export const TABLE_CENTER_ALIGN = /^ *:-+: *$/
-export const TABLE_LEFT_ALIGN = /^ *:-+ *$/
-export const TABLE_RIGHT_ALIGN = /^ *-+: *$/
-export const TEXT_BOLD_R =
+const INTERPOLATION_R = /^\{.*\}$/
+const LINK_AUTOLINK_BARE_URL_R = /^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/
+const LINK_AUTOLINK_MAILTO_R = /^<([^ >]+@[^ >]+)>/
+const LINK_AUTOLINK_R = /^<([^ >]+:\/[^ >]+)>/
+const LIST_ITEM_END_R = / *\n+$/
+const LIST_LOOKBEHIND_R = /(?:^|\n)( *)$/
+const CAPTURE_LETTER_AFTER_HYPHEN = /-([a-z])?/gi
+const NP_TABLE_R = /^(.*\|?.*)\n *(\|? *[-:]+ *\|[-| :]*)\n((?:.*\|.*\n)*)\n?/
+const PARAGRAPH_R = /^((?:[^\n]|\n(?! *\n))+)(?:\n *)+\n/
+const REFERENCE_IMAGE_OR_LINK = /^\[([^\]]*)\]:\s*(\S+)\s*("([^"]*)")?/
+const REFERENCE_IMAGE_R = /^!\[([^\]]*)\] ?\[([^\]]*)\]/
+const REFERENCE_LINK_R = /^\[([^\]]*)\] ?\[([^\]]*)\]/
+const SQUARE_BRACKETS_R = /(\[|\])/g
+const SHOULD_RENDER_AS_BLOCK_R = /(\n|^[-*]\s|^#|^ {2,}|^-{2,}|^>\s)/
+const TAB_R = /\t/g
+const TABLE_SEPARATOR_R = /^ *\| */
+const TABLE_TRIM_PIPES = /(^ *\||\| *$)/g
+const TABLE_CELL_END_TRIM = / *$/
+const TABLE_CENTER_ALIGN = /^ *:-+: *$/
+const TABLE_LEFT_ALIGN = /^ *:-+ *$/
+const TABLE_RIGHT_ALIGN = /^ *-+: *$/
+const TEXT_BOLD_R =
   /^([*_])\1((?:\[.*?\][([].*?[)\]]|<.*?>(?:.*?<.*?>)?|`.*?`|~+.*?~+|.)*?)\1\1(?!\1)/
-export const TEXT_EMPHASIZED_R =
+const TEXT_EMPHASIZED_R =
   /^([*_])((?:\[.*?\][([].*?[)\]]|<.*?>(?:.*?<.*?>)?|`.*?`|~+.*?~+|.)*?)\1(?!\1|\w)/
-export const TEXT_STRIKETHROUGHED_R =
-  /^~~((?:\[.*?\]|<.*?>(?:.*?<.*?>)?|`.*?`|.)*?)~~/
+const TEXT_STRIKETHROUGHED_R = /^~~((?:\[.*?\]|<.*?>(?:.*?<.*?>)?|`.*?`|.)*?)~~/
 
-export const TEXT_ESCAPED_R = /^\\([^0-9A-Za-z\s])/
-export const TEXT_PLAIN_R =
+const TEXT_ESCAPED_R = /^\\([^0-9A-Za-z\s])/
+const TEXT_PLAIN_R =
   /^[\s\S]+?(?=[^0-9A-Z\s\u00c0-\uffff&;.()'"]|\d+\.|\n\n| {2,}\n|\w+:\S|$)/i
-export const TRIM_NEWLINES_AND_TRAILING_WHITESPACE_R = /(^\n+|\n+$|\s+$)/g
+const TRIM_NEWLINES_AND_TRAILING_WHITESPACE_R = /(^\n+|\n+$|\s+$)/g
 
-export const HTML_LEFT_TRIM_AMOUNT_R = /^([ \t]*)/
+const HTML_LEFT_TRIM_AMOUNT_R = /^([ \t]*)/
 
-export const UNESCAPE_URL_R = /\\([^0-9A-Z\s])/gi
+const UNESCAPE_URL_R = /\\([^0-9A-Z\s])/gi
 
 // recognize a `*` `-`, `+`, `1.`, `2.`... list bullet
 const LIST_BULLET = '(?:[*+-]|\\d+\\.)'
@@ -367,7 +365,7 @@ const LIST_BULLET = '(?:[*+-]|\\d+\\.)'
 // recognize the start of a list item:
 // leading space plus a bullet plus a space (`   * `)
 const LIST_ITEM_PREFIX = '( *)(' + LIST_BULLET + ') +'
-export const LIST_ITEM_PREFIX_R = new RegExp('^' + LIST_ITEM_PREFIX)
+const LIST_ITEM_PREFIX_R = new RegExp('^' + LIST_ITEM_PREFIX)
 
 // recognize an individual list item:
 //  * hi
@@ -376,7 +374,7 @@ export const LIST_ITEM_PREFIX_R = new RegExp('^' + LIST_ITEM_PREFIX)
 //    as is this, which is a new paragraph in the same item
 //
 //  * but this is not part of the same item
-export const LIST_ITEM_R = new RegExp(
+const LIST_ITEM_R = new RegExp(
   LIST_ITEM_PREFIX +
     '[^\\n]*(?:\\n' +
     '(?!\\1' +
@@ -387,7 +385,7 @@ export const LIST_ITEM_R = new RegExp(
 
 // check whether a list item has paragraphs: if it does,
 // we leave the newlines at the end
-export const LIST_R = new RegExp(
+const LIST_R = new RegExp(
   '^( *)(' +
     LIST_BULLET +
     ') ' +
@@ -406,15 +404,15 @@ const LINK_INSIDE = '(?:\\[[^\\]]*\\]|[^\\[\\]]|\\](?=[^\\[]*\\]))*'
 const LINK_HREF_AND_TITLE =
   '\\s*<?((?:[^\\s\\\\]|\\\\.)*?)>?(?:\\s+[\'"]([\\s\\S]*?)[\'"])?\\s*'
 
-export const LINK_R = new RegExp(
+const LINK_R = new RegExp(
   '^\\[(' + LINK_INSIDE + ')\\]\\(' + LINK_HREF_AND_TITLE + '\\)'
 )
 
-export const IMAGE_R = new RegExp(
+const IMAGE_R = new RegExp(
   '^!\\[(' + LINK_INSIDE + ')\\]\\(' + LINK_HREF_AND_TITLE + '\\)'
 )
 
-export const BLOCK_SYNTAXES = [
+const BLOCK_SYNTAXES = [
   BLOCKQUOTE_R,
   CODE_BLOCK_R,
   CODE_BLOCK_FENCED_R,
@@ -780,7 +778,7 @@ function reactFor(outputFunc) {
   }
 }
 
-function sanitizeUrl(url: string): string | null {
+export function sanitizeUrl(url: string): string | null {
   try {
     const decoded = decodeURIComponent(url).replace(/[^A-Za-z0-9/:]/g, '')
 
