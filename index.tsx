@@ -816,7 +816,7 @@ function unescapeUrl(rawUrlString: string): string {
 /**
  * Everything inline, including links.
  */
-function parseInline(
+export function parseInline(
   parse: MarkdownToJSX.NestedParser,
   content: string,
   state: MarkdownToJSX.State
@@ -834,7 +834,7 @@ function parseInline(
 /**
  * Anything inline that isn't a link.
  */
-function parseSimpleInline(
+export function parseSimpleInline(
   parse: MarkdownToJSX.NestedParser,
   content: string,
   state: MarkdownToJSX.State
@@ -849,7 +849,7 @@ function parseSimpleInline(
   return result
 }
 
-function parseBlock(
+export function parseBlock(
   parse,
   content,
   state: MarkdownToJSX.State
@@ -858,12 +858,13 @@ function parseBlock(
   return parse(content + '\n\n', state)
 }
 
-const parseCaptureInline: MarkdownToJSX.Parser<ReturnType<typeof parseInline>> =
-  (capture, parse, state: MarkdownToJSX.State) => {
-    return {
-      content: parseInline(parse, capture[1], state),
-    }
+export const parseCaptureInline: MarkdownToJSX.Parser<
+  ReturnType<typeof parseInline>
+> = (capture, parse, state: MarkdownToJSX.State) => {
+  return {
+    content: parseInline(parse, capture[1], state),
   }
+}
 
 function captureNothing() {
   return {}
