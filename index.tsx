@@ -1188,6 +1188,7 @@ export function compiler(
         return {
           content: capture[1],
           target: `#${options.slugify(capture[1])}`,
+          footnotes,
         }
       },
       react(node, output, state) {

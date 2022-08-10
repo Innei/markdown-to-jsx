@@ -1,3 +1,27 @@
-import Markdown, { compiler } from './'
-Object.assign(Markdown, { compiler })
-export default Markdown as typeof Markdown & { compiler: typeof compiler }
+import Markdown, {
+  compiler,
+  Priority,
+  anyScopeRegex,
+  blockRegex,
+  inlineRegex,
+  parseBlock,
+  parseInline,
+  parseSimpleInline,
+  parseCaptureInline,
+  sanitizeUrl,
+  simpleInlineRegex,
+} from './'
+Object.assign(Markdown, {
+  compiler,
+  Priority,
+  anyScopeRegex,
+  blockRegex,
+  inlineRegex,
+  parseBlock,
+  parseInline,
+  parseSimpleInline,
+  parseCaptureInline,
+  sanitizeUrl,
+  simpleInlineRegex,
+})
+export default Markdown
