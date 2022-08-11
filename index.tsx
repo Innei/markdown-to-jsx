@@ -150,41 +150,11 @@ export namespace MarkdownToJSX {
   } & {
     [customComponent: string]: Override
   }
-  export type ExtendsRules = Partial<{
-    blockQuote: Rule
-    breakLine: Rule
-    breakThematic: Rule
-    codeBlock: Rule
-    codeFenced: Rule
-    codeInline: Rule
-    footnote: Rule
-    footnoteReference: Rule
-    gfmTask: Rule
-    heading: Rule
-    headingSetext: Rule
-    htmlComment: Rule
-    image: Rule
-    link: Rule
-    linkAngleBraceStyleDetector: Rule
-    linkBareUrlDetector: Rule
-    linkMailtoDetector: Rule
-    list: Rule
-    newlineCoalescer: Rule
-    paragraph: Rule
-    ref: Rule
-    refImage: Rule
-    refLink: Rule
-    table: Rule
-    tableSeparator: Rule
-    text: Rule
-    textBolded: Rule
-    textEmphasized: Rule
-    textEscaped: Rule
-    textStrikethroughed: Rule
-    htmlBlock: Rule
-    htmlSelfClosing: Rule
-    [key: string]: Partial<Rule>
-  }>
+  export type ExtendsRules = Partial<
+    {
+      [key in RuleName]: Partial<Rule>
+    }
+  >
 
   export type DisabledRuleType = RuleName[]
 
@@ -1962,7 +1932,7 @@ export function compiler(
     }
   }
 
-  const parser = parserFor(rules as  MarkdownToJSX.Rules)
+  const parser = parserFor(rules as MarkdownToJSX.Rules)
   const emitter: Function = reactFor(ruleOutput(rules as MarkdownToJSX.Rules))
 
   const jsx = compile(markdown)
