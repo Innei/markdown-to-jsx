@@ -150,9 +150,41 @@ export namespace MarkdownToJSX {
   } & {
     [customComponent: string]: Override
   }
-  export type ExtendsRules = {
+  export type ExtendsRules = Partial<{
+    blockQuote: Rule
+    breakLine: Rule
+    breakThematic: Rule
+    codeBlock: Rule
+    codeFenced: Rule
+    codeInline: Rule
+    footnote: Rule
+    footnoteReference: Rule
+    gfmTask: Rule
+    heading: Rule
+    headingSetext: Rule
+    htmlComment: Rule
+    image: Rule
+    link: Rule
+    linkAngleBraceStyleDetector: Rule
+    linkBareUrlDetector: Rule
+    linkMailtoDetector: Rule
+    list: Rule
+    newlineCoalescer: Rule
+    paragraph: Rule
+    ref: Rule
+    refImage: Rule
+    refLink: Rule
+    table: Rule
+    tableSeparator: Rule
+    text: Rule
+    textBolded: Rule
+    textEmphasized: Rule
+    textEscaped: Rule
+    textStrikethroughed: Rule
+    htmlBlock: Rule
+    htmlSelfClosing: Rule
     [key: string]: Partial<Rule>
-  }
+  }>
 
   export type DisabledRuleType = RuleName[]
 
@@ -235,7 +267,9 @@ export namespace MarkdownToJSX {
     /**
      * Add additional rules for parsing the markdown
      */
-    additionalParserRules: MarkdownToJSX.Rules
+    additionalParserRules: {
+      [key: string]: Rule
+    }
 
     extendsRules: ExtendsRules
     /** @default [] */
