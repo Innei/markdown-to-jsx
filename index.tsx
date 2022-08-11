@@ -69,7 +69,72 @@ export namespace MarkdownToJSX {
     ) => React.ReactChild
   }
 
+  export type RuleName =
+    | 'blockQuote'
+    | 'breakLine'
+    | 'breakThematic'
+    | 'codeBlock'
+    | 'codeFenced'
+    | 'codeInline'
+    | 'footnote'
+    | 'footnoteReference'
+    | 'gfmTask'
+    | 'heading'
+    | 'headingSetext'
+    | 'htmlComment'
+    | 'image'
+    | 'link'
+    | 'linkAngleBraceStyleDetector'
+    | 'linkBareUrlDetector'
+    | 'linkMailtoDetector'
+    | 'list'
+    | 'newlineCoalescer'
+    | 'paragraph'
+    | 'ref'
+    | 'refImage'
+    | 'refLink'
+    | 'table'
+    | 'tableSeparator'
+    | 'text'
+    | 'textBolded'
+    | 'textEmphasized'
+    | 'textEscaped'
+    | 'textStrikethroughed'
+    | 'htmlBlock'
+    | 'htmlSelfClosing'
   export type Rules = {
+    blockQuote: Rule
+    breakLine: Rule
+    breakThematic: Rule
+    codeBlock: Rule
+    codeFenced: Rule
+    codeInline: Rule
+    footnote: Rule
+    footnoteReference: Rule
+    gfmTask: Rule
+    heading: Rule
+    headingSetext: Rule
+    htmlComment: Rule
+    image: Rule
+    link: Rule
+    linkAngleBraceStyleDetector: Rule
+    linkBareUrlDetector: Rule
+    linkMailtoDetector: Rule
+    list: Rule
+    newlineCoalescer: Rule
+    paragraph: Rule
+    ref: Rule
+    refImage: Rule
+    refLink: Rule
+    table: Rule
+    tableSeparator: Rule
+    text: Rule
+    textBolded: Rule
+    textEmphasized: Rule
+    textEscaped: Rule
+    textStrikethroughed: Rule
+    htmlBlock: Rule
+    htmlSelfClosing: Rule
     [key: string]: Rule
   }
 
@@ -88,6 +153,8 @@ export namespace MarkdownToJSX {
   export type ExtendsRules = {
     [key: string]: Partial<Rule>
   }
+
+  export type DisabledRuleType = RuleName[]
 
   export type Options = Partial<{
     /**
@@ -171,6 +238,13 @@ export namespace MarkdownToJSX {
     additionalParserRules: MarkdownToJSX.Rules
 
     extendsRules: ExtendsRules
+    /** @default [] */
+
+    disabledTypes: DisabledRuleType
+    /**
+     * @default ['script', 'style']
+     */
+    doNotProcessHtmlElements: HTMLTags[]
   }>
 }
 
@@ -945,7 +1019,7 @@ export function compiler(
   options.namedCodesToUnicode = options.namedCodesToUnicode
     ? { ...namedCodesToUnicode, ...options.namedCodesToUnicode }
     : namedCodesToUnicode
-  options.additionalParserRules = options.additionalParserRules || {}
+  options.additionalParserRules = options.additionalParserRules || ({} as any)
 
   const createElementFn = options.createElement || React.createElement
 
@@ -1751,6 +1825,12 @@ export function compiler(
   //     };
   // });
 
+  if (options.disabledTypes?.length) {
+    options.disabledTypes.forEach(type => {
+      delete rules[type]
+    })
+  }
+
   if (options.disableParsingRawHTML !== true) {
     rules.htmlBlock = {
       /**
@@ -1769,7 +1849,9 @@ export function compiler(
 
         const tagName = capture[1].toLowerCase() as MarkdownToJSX.HTMLTags
         const noInnerParse =
-          DO_NOT_PROCESS_HTML_ELEMENTS.indexOf(tagName) !== -1
+          (
+            options.doNotProcessHtmlElements ?? DO_NOT_PROCESS_HTML_ELEMENTS
+          ).indexOf(tagName) !== -1
 
         state.inAnchor = state.inAnchor || tagName === 'a'
 
