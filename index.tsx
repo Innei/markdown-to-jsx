@@ -1190,7 +1190,7 @@ export function compiler(
    * each rule's react() output function goes through our custom h() JSX pragma;
    * this allows the override functionality to be automatically applied
    */
-  const rules: MarkdownToJSX.Rules = {
+  const rules: Partial<MarkdownToJSX.Rules> = {
     blockQuote: {
       match: blockRegex(BLOCKQUOTE_R),
       order: Priority.HIGH,
@@ -1962,8 +1962,8 @@ export function compiler(
     }
   }
 
-  const parser = parserFor(rules)
-  const emitter: Function = reactFor(ruleOutput(rules))
+  const parser = parserFor(rules as  MarkdownToJSX.Rules)
+  const emitter: Function = reactFor(ruleOutput(rules as MarkdownToJSX.Rules))
 
   const jsx = compile(markdown)
 
