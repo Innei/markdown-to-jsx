@@ -1073,8 +1073,9 @@ export function compiler(
                              }`)
     }
   }
-
-  const footnotes: { footnote: string; identifier: string }[] = []
+  type FootNote = { footnote: string; identifier: string }
+  const footnotes: FootNote[] = []
+  const footnoteMap = new Map<string, FootNote>()
   const refs: { [key: string]: { target: string; title: string } } = {}
 
   /**
@@ -1171,10 +1172,12 @@ export function compiler(
       match: blockRegex(FOOTNOTE_R),
       order: Priority.MAX,
       parse(capture /*, parse, state*/) {
-        footnotes.push({
+        const obj = {
           footnote: capture[2],
           identifier: capture[1],
-        })
+        }
+        footnotes.push(obj)
+        footnoteMap.set(obj.identifier, obj)
 
         return {}
       },
@@ -1188,7 +1191,7 @@ export function compiler(
         return {
           content: capture[1],
           target: `#${options.slugify(capture[1])}`,
-          footnotes,
+          footnoteMap,
         }
       },
       react(node, output, state) {
