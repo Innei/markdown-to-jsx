@@ -156,8 +156,6 @@ export namespace MarkdownToJSX {
     }
   >
 
-  export type DisabledRuleType = RuleName[]
-
   export type Options = Partial<{
     /**
      * Ultimate control over the output of all rendered JSX.
@@ -244,7 +242,9 @@ export namespace MarkdownToJSX {
     extendsRules: ExtendsRules
     /** @default [] */
 
-    disabledTypes: DisabledRuleType
+    disabledTypes: RuleName[]
+
+    allowedTypes: RuleName[]
     /**
      * @default ['script', 'style']
      */
@@ -1829,7 +1829,13 @@ export function compiler(
   //     };
   // });
 
-  if (options.disabledTypes?.length) {
+  if (options.allowedTypes?.length) {
+    Object.keys(rules).forEach(key => {
+      if (!options.allowedTypes.includes(key as any)) {
+        delete rules[key]
+      }
+    })
+  } else if (options.disabledTypes?.length) {
     options.disabledTypes.forEach(type => {
       delete rules[type]
     })
