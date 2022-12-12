@@ -522,7 +522,6 @@ function slugify(str: string) {
     .replace(/[øØœŒÕõÔôÓóÒò]/g, 'o')
     .replace(/[ÜüÛûÚúÙù]/g, 'u')
     .replace(/[ŸÿÝý]/g, 'y')
-    .replace(/[^a-z0-9- ]/gi, '')
     .replace(/ /gi, '-')
     .toLowerCase()
 }
