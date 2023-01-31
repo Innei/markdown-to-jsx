@@ -2835,6 +2835,44 @@ comment -->`)
       </span>
     `)
   })
+
+  it('#465 misc regression test', () => {
+    render(compiler('hello [h]:m **world**'))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <span>
+        hello [h]:m
+        <strong>
+          world
+        </strong>
+      </span>
+    `)
+  })
+
+  it('#455 fenced code block regression test', () => {
+    render(
+      compiler(`Hello world example
+
+\`\`\`python data-start="2"
+print("hello world")
+\`\`\``)
+    )
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div>
+        <p>
+          Hello world example
+        </p>
+        <pre>
+          <code data-start="2"
+                class="lang-python"
+          >
+            print("hello world")
+          </code>
+        </pre>
+      </div>
+    `)
+  })
 })
 
 describe('horizontal rules', () => {

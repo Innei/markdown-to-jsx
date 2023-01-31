@@ -353,7 +353,7 @@ const BLOCKQUOTE_TRIM_LEFT_MULTILINE_R = /^ *> ?/gm
 const BREAK_LINE_R = /^ {2,}\n/
 const BREAK_THEMATIC_R = /^(?:( *[-*_]) *){3,}(?:\n *)+\n/
 const CODE_BLOCK_FENCED_R =
-  /^\s*(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n *)+\n?/
+  /^\s*(`{3,}|~{3,}) *(\S+)?([^\n]*?)?\n([\s\S]+?)\s*\1 *(?:\n *)*\n?/
 const CODE_BLOCK_R = /^(?: {4}[^\n]+\n*)+(?:\n *)+\n?/
 const CODE_INLINE_R = /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/
 const CONSECUTIVE_NEWLINE_R = /^(?:\n *)*\n/
@@ -1209,20 +1209,29 @@ export function compiler(
       react(node, output, state) {
         return (
           <pre key={state.key}>
-            <code className={node.lang ? `lang-${node.lang}` : ''}>
+            <code
+              {...node.attrs}
+              className={node.lang ? `lang-${node.lang}` : ''}
+            >
               {node.content}
             </code>
           </pre>
         )
       },
-    } as MarkdownToJSX.Rule<{ content: string; lang?: string }>,
+    } as MarkdownToJSX.Rule<{
+      attrs?: ReturnType<typeof attrStringToMap>
+      content: string
+      lang?: string
+    }>,
 
     codeFenced: {
       match: blockRegex(CODE_BLOCK_FENCED_R),
       order: Priority.MAX,
       parse(capture /*, parse, state*/) {
         return {
-          content: capture[3],
+          // if capture[3] it's additional metadata
+          attrs: attrStringToMap(capture[3] || ''),
+          content: capture[4],
           lang: capture[2] || undefined,
           type: 'codeBlock',
         }
