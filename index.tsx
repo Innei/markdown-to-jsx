@@ -546,7 +546,7 @@ function generateListRule(h: any, type: LIST_TYPE) {
       // in which case we can parse with inline scope, but need to allow
       // nested lists inside this inline scope.
       const isStartOfLine = LIST_LOOKBEHIND_R.exec(prevCapture)
-      const isListBlock = state.list || !state.inline
+      const isListBlock = state.list || (!state.inline && !state.simple)
 
       if (isStartOfLine && isListBlock) {
         source = isStartOfLine[1] + source
