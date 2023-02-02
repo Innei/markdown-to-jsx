@@ -23,6 +23,14 @@
     "LICENSE",
     "README.md"
   ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/index.modern.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "main": "dist/index.js",
   "module": "dist/index.module.js",
   "source": "index.tsx",
