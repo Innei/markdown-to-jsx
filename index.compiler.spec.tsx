@@ -771,6 +771,76 @@ describe('links', () => {
     `)
   })
 
+  it('should handle a link reference with angle brackets', () => {
+    render(compiler(['[foo][1]', '[1]: </xyz.png>'].join('\n')))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <p>
+        <a href="/xyz.png">
+          foo
+        </a>
+      </p>
+    `)
+  })
+
+  it('should handle a link reference with angle brackets and a space', () => {
+    render(compiler(['[foo] [1]', '[1]: </xyz.png>'].join('\n')))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <p>
+        <a href="/xyz.png">
+          foo
+        </a>
+      </p>
+    `)
+  })
+
+  it('should handle a link reference with angle brackets and a title', () => {
+    render(compiler(['[foo][1]', '[1]: </xyz.png> "bar"'].join('\n')))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <p>
+        <a href="/xyz.png"
+           title="bar"
+        >
+          foo
+        </a>
+      </p>
+    `)
+  })
+
+  it('list item should break paragraph', () => {
+    render(compiler('foo\n- item'))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div>
+        <p>
+          foo
+        </p>
+        <ul>
+          <li>
+            item
+          </li>
+        </ul>
+      </div>
+    `)
+  })
+
+  it('header should break paragraph', () => {
+    render(compiler('foo\n# header'))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div>
+        <p>
+          foo
+        </p>
+        <h1 id="header">
+          header
+        </h1>
+      </div>
+    `)
+  })
+
   it('should handle autolink style', () => {
     render(compiler('<https://google.com>'))
 
