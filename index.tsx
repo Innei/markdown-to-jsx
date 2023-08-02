@@ -790,10 +790,7 @@ function normalizeAttributeKey(key) {
   return key
 }
 
-function attributeValueToJSXPropValue(
-  key: JSX.IntrinsicAttributes,
-  value: string
-): any {
+function attributeValueToJSXPropValue(key: string, value: string): any {
   if (key === 'style') {
     return value.split(/;\s?/).reduce(function (styles, kvPair) {
       const key = kvPair.slice(0, kvPair.indexOf(':'))
@@ -1875,11 +1872,11 @@ export function compiler(
     },
 
     textMarked: {
-      _match: simpleInlineRegex(TEXT_MARKED_R),
-      _order: Priority.LOW,
-      _parse: parseCaptureInline,
-      _react(node, output, state) {
-        return <mark key={state._key}>{output(node._content, state)}</mark>
+      match: simpleInlineRegex(TEXT_MARKED_R),
+      order: Priority.LOW,
+      parse: parseCaptureInline,
+      react(node, output, state) {
+        return <mark key={state.key}>{output(node._content, state)}</mark>
       },
     } as MarkdownToJSX.Rule<ReturnType<typeof parseCaptureInline>>,
 
