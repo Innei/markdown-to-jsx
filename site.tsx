@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* @jsx React.createElement */
 import { lighten, rgba } from 'polished'
 import React from 'react'
@@ -13,7 +14,7 @@ declare module 'react' {
 
 function TryItLive() {
   const [markdown, setMarkdown] = React.useState(
-    document.getElementById('sample-content').textContent.trim()
+    document.getElementById('sample-content')!.textContent!.trim()
   )
 
   const handleInput = React.useCallback(e => setMarkdown(e.target.value), [])
