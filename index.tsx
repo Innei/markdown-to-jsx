@@ -40,13 +40,13 @@ export namespace MarkdownToJSX {
 
   export type NestedParser = (
     input: string,
-    state?: MarkdownToJSX.State
+    state: MarkdownToJSX.State
   ) => MarkdownToJSX.ParserResult
 
   export type Parser<ParserOutput> = (
     capture: RegExpMatchArray,
     nestedParse: NestedParser,
-    state?: MarkdownToJSX.State
+    state: MarkdownToJSX.State
   ) => ParserOutput
 
   export type RuleOutput = (
@@ -595,9 +595,9 @@ function generateListRule(h: any, type: LIST_TYPE) {
         // backup our state for restoration afterwards. We're going to
         // want to set state._list to true, and state._inline depending
         // on our list's looseness.
-        const oldStateInline = state.inline
-        const oldStateList = state.list
-        state.list = true
+        const oldStateInline = state?.inline
+        const oldStateList = state?.list
+        if (state) state.list = true
 
         // Parse inline if we're in a tight list, or block if we're in
         // a loose list.
@@ -710,7 +710,7 @@ function parseTableRow(
   const tableRow = parse(source.trim(), state)
   state.inTable = prevInTable
 
-  let cells = [[]]
+  const cells = [[]] as MarkdownToJSX.ParserResult[][]
   tableRow.forEach(function (node, i) {
     if (node.type === 'tableSeparator') {
       // Filter out empty table separators at the start/end:
@@ -892,7 +892,7 @@ function parserFor(
     source: string,
     state: MarkdownToJSX.State
   ): MarkdownToJSX.ParserResult[] {
-    let result = []
+    const result = [] as MarkdownToJSX.ParserResult[]
 
     // We store the previous capture so that match functions can
     // use some limited amount of lookbehind. Lists use this to
@@ -1014,10 +1014,10 @@ function reactFor(outputFunc) {
   return function nestedReactOutput(
     ast: MarkdownToJSX.ParserResult | MarkdownToJSX.ParserResult[],
     state: MarkdownToJSX.State = {}
-  ): React.ReactChild[] {
+  ): React.ReactNode[] {
     if (Array.isArray(ast)) {
       const oldKey = state.key
-      const result = []
+      const result = [] as React.ReactNode[]
 
       // map nestedOutput over the ast, except group any text
       // nodes together into a single string output.
@@ -1047,7 +1047,7 @@ function reactFor(outputFunc) {
   }
 }
 
-export function sanitizeUrl(url: string): string | null {
+export function sanitizeUrl(url: string): string {
   try {
     const decoded = decodeURIComponent(url).replace(/[^A-Za-z0-9/:]/g, '')
 
@@ -1059,7 +1059,7 @@ export function sanitizeUrl(url: string): string | null {
         )
       }
 
-      return null
+      return ''
     }
   } catch (e) {
     if (process.env.NODE_ENV !== 'production') {
@@ -1072,7 +1072,7 @@ export function sanitizeUrl(url: string): string | null {
     // decodeURIComponent sometimes throws a URIError
     // See `decodeURIComponent('a%AFc');`
     // http://stackoverflow.com/questions/9064536/javascript-decodeuricomponent-malformed-uri-exception
-    return null
+    return ''
   }
 
   return url
@@ -1149,7 +1149,16 @@ function ruleOutput(rules: MarkdownToJSX.Rules) {
     outputFunc: MarkdownToJSX.RuleOutput,
     state: MarkdownToJSX.State
   ): React.ReactNode {
-    return rules[ast.type].react(ast, outputFunc, state)
+    if (!ast.type) return null
+    const render = rules[ast.type].react
+    if (!render) {
+      console.error(
+        'markdown-to-jsx: no react output defined for type `%s`',
+        ast.type
+      )
+      return null
+    }
+    return render(ast, outputFunc, state)
   }
 }
 
@@ -1227,14 +1236,19 @@ export function compiler(
     },
     ...children
   ) {
-    const overrideProps = get(options.overrides, `${tag}.props`, {})
+    const { overrides = {} } = options || {}
+    const overrideProps = get(overrides, `${tag}.props`, {}) as Record<
+      string,
+      any
+    >
 
     return createElementFn(
-      getTag(tag, options.overrides),
+      getTag(tag, overrides) as any,
       {
         ...props,
         ...overrideProps,
-        className: cx(props?.className, overrideProps.className) || undefined,
+        // @ts-expect-error
+        className: cx(props?.className, overrideProps?.className) || undefined,
       },
       ...children
     )
@@ -1288,7 +1302,7 @@ export function compiler(
     return React.createElement(wrapper, { key: 'outer' }, jsx)
   }
 
-  function attrStringToMap(str: string): JSX.IntrinsicAttributes {
+  function attrStringToMap(str: string): JSX.IntrinsicAttributes | undefined {
     const attributes = str.match(ATTR_EXTRACTOR_R)
 
     return attributes
@@ -1468,13 +1482,13 @@ export function compiler(
       parse(capture /*, parse*/) {
         return {
           content: capture[1],
-          target: `#${options.slugify(capture[1])}`,
+          target: `#${options.slugify!(capture[1])}`,
           footnoteMap,
         }
       },
       react(node, output, state) {
         return (
-          <a key={state.key} href={sanitizeUrl(node.target)}>
+          <a key={state.key} href={sanitizeUrl(node.target)!}>
             <sup key={state.key}>{node.content}</sup>
           </a>
         )
@@ -1507,7 +1521,7 @@ export function compiler(
       parse(capture, parse, state) {
         return {
           content: parseInline(parse, capture[2], state),
-          id: options.slugify(capture[2]),
+          id: options.slugify!(capture[2]),
           level: capture[1].length,
         }
       },
@@ -1563,7 +1577,7 @@ export function compiler(
             key={state.key}
             alt={node.alt || undefined}
             title={node.title || undefined}
-            src={sanitizeUrl(node.target)}
+            src={sanitizeUrl(node.target)!}
           />
         )
       },
@@ -1581,7 +1595,11 @@ export function compiler(
       },
       react(node, output, state) {
         return (
-          <a key={state.key} href={sanitizeUrl(node.target)} title={node.title}>
+          <a
+            key={state.key}
+            href={sanitizeUrl(node.target)!}
+            title={node.title}
+          >
             {output(node.content, state)}
           </a>
         )
@@ -1707,7 +1725,7 @@ export function compiler(
           <img
             key={state.key}
             alt={node.alt}
-            src={sanitizeUrl(refs[node.ref].target)}
+            src={sanitizeUrl(refs[node.ref].target)!}
             title={refs[node.ref].title}
           />
         )
@@ -1731,7 +1749,7 @@ export function compiler(
         return refs[node.ref] ? (
           <a
             key={state.key}
-            href={sanitizeUrl(refs[node.ref].target)}
+            href={sanitizeUrl(refs[node.ref].target)!}
             title={refs[node.ref].title}
           >
             {output(node.content, state)}
@@ -1814,9 +1832,7 @@ export function compiler(
           content: capture[0]
             // nbsp -> unicode equivalent for named chars
             .replace(HTML_CHAR_CODE_R, (full, inner) => {
-              return options.namedCodesToUnicode[inner]
-                ? options.namedCodesToUnicode[inner]
-                : full
+              return options.namedCodesToUnicode?.[inner] || full
             }),
         }
       },
@@ -1925,7 +1941,7 @@ export function compiler(
 
   if (options.allowedTypes?.length) {
     Object.keys(rules).forEach(key => {
-      if (!options.allowedTypes.includes(key as any)) {
+      if (!options.allowedTypes?.includes(key as any)) {
         delete rules[key]
       }
     })
@@ -1943,7 +1959,14 @@ export function compiler(
       match: anyScopeRegex(HTML_BLOCK_ELEMENT_R),
       order: Priority.HIGH,
       parse(capture, parse, state) {
-        const [, whitespace] = capture[3].match(HTML_LEFT_TRIM_AMOUNT_R)
+        const result = capture[3].match(HTML_LEFT_TRIM_AMOUNT_R)
+        if (!result) {
+          console.error(
+            'markdown-to-jsx: HTML_BLOCK_ELEMENT_R regex matched but no result'
+          )
+          return null
+        }
+        const [, whitespace] = result
         const trimmer = new RegExp(`^${whitespace}`, 'gm')
         const trimmed = capture[3].replace(trimmer, '')
 
@@ -2026,7 +2049,7 @@ export function compiler(
         continue
       }
 
-      Object.assign(rules[key], {
+      Object.assign(rules[key]!, {
         ...extendsRules[key],
       })
     }
@@ -2042,7 +2065,7 @@ export function compiler(
       <footer key="footer">
         {footnotes.map(function createFootnote(def) {
           return (
-            <div id={options.slugify(def.identifier)} key={def.identifier}>
+            <div id={options.slugify!(def.identifier)} key={def.identifier}>
               {def.identifier}
               {emitter(parser(def.footnote, { inline: true }))}
             </div>

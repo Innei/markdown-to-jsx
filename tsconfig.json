@@ -5,6 +5,7 @@
     "incremental": true,
     "jsx": "react",
     "module": "ESNext",
+    "strictNullChecks": true,
     "moduleResolution": "node",
     "outDir": "./dist",
     "target": "ESNext"
