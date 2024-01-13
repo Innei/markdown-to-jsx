@@ -9,5 +9,7 @@
     "outDir": "./dist",
     "target": "ESNext"
   },
-  "files": ["index.tsx"]
+  "files": [
+    "index.tsx"
+  ]
 }

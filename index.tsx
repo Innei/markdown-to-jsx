@@ -59,14 +59,14 @@ export namespace MarkdownToJSX {
       source: string,
       state: MarkdownToJSX.State,
       prevCapturedString?: string
-    ) => RegExpMatchArray
+    ) => RegExpMatchArray | null
     order: Priority
     parse: MarkdownToJSX.Parser<ParserOutput>
     react?: (
       node: ParserOutput,
       output: RuleOutput,
-      state?: MarkdownToJSX.State
-    ) => React.ReactChild
+      state: MarkdownToJSX.State
+    ) => React.ReactNode
   }
 
   export type RuleName =
@@ -150,11 +150,9 @@ export namespace MarkdownToJSX {
   } & {
     [customComponent: string]: Override
   }
-  export type ExtendsRules = Partial<
-    {
-      [key in RuleName]: Partial<Rule>
-    }
-  >
+  export type ExtendsRules = Partial<{
+    [key in RuleName]: Partial<Rule>
+  }>
 
   export type Options = Partial<{
     /**
@@ -536,6 +534,7 @@ function generateListRule(h: any, type: LIST_TYPE) {
       // lists can be inline, because they might be inside another list,
       // in which case we can parse with inline scope, but need to allow
       // nested lists inside this inline scope.
+      if (!prevCapture) return null
       const isStartOfLine = LIST_LOOKBEHIND_R.exec(prevCapture)
       const isListBlock = state.list || (!state.inline && !state.simple)
 
@@ -558,9 +557,9 @@ function generateListRule(h: any, type: LIST_TYPE) {
         .match(LIST_ITEM_R)
 
       let lastItemWasAParagraph = false
-      const itemContent = items.map(function (item, i) {
+      const itemContent = items?.map(function (item, i) {
         // We need to see how far indented the item is:
-        const space = LIST_ITEM_PREFIX_R.exec(item)[0].length
+        const space = LIST_ITEM_PREFIX_R.exec(item)?.[0].length
 
         // And then we construct a regex to "unindent" the subsequent
         // lines of the items by that amount:
@@ -1149,7 +1148,7 @@ function ruleOutput(rules: MarkdownToJSX.Rules) {
     ast: MarkdownToJSX.ParserResult,
     outputFunc: MarkdownToJSX.RuleOutput,
     state: MarkdownToJSX.State
-  ): React.ReactChild {
+  ): React.ReactNode {
     return rules[ast.type].react(ast, outputFunc, state)
   }
 }
