@@ -85,6 +85,11 @@
     "size": "size-limit",
     "benchmark": "node -r esm benchmark.js"
   },
+  "bump": {
+    "leading": [
+      "npm run build"
+    ]
+  },
   "mangle": {
     "regex": "^_"
   },

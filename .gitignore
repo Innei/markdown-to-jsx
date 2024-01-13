@@ -6,3 +6,6 @@ dist/
 *.log
 package-lock.json
 npm-shrinkwrap.json
+
+docs/*.js
+docs/*.js.map

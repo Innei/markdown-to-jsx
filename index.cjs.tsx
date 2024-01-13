@@ -10,7 +10,7 @@ import Markdown, {
   parseCaptureInline,
   sanitizeUrl,
   simpleInlineRegex,
-} from './'
+} from './index'
 Object.assign(Markdown, {
   compiler,
   Priority,
