@@ -172,6 +172,14 @@ export namespace MarkdownToJSX {
     disableParsingRawHTML: boolean
 
     /**
+     * Forces the compiler to have space between hash sign and the header text which
+     * is explicitly stated in the most of the markdown specs.
+     * https://github.github.com/gfm/#atx-heading
+     * `The opening sequence of # characters must be followed by a space or by the end of line.`
+     */
+    enforceAtxHeadings: boolean
+
+    /**
      * Forces the compiler to always output content with a block-level wrapper
      * (`<p>` or any block-level syntax your markdown already contains.)
      */
@@ -359,10 +367,12 @@ const CR_NEWLINE_R = /\r\n?/g
 const FOOTNOTE_R = /^\[\^([^\]]+)](:.*)\n/
 const FOOTNOTE_REFERENCE_R = /^\[\^([^\]]+)]/
 const FORMFEED_R = /\f/g
+const FRONT_MATTER_R = /^---[ \t]*\n(.|\n)*\n---[ \t]*\n/
 const GFM_TASK_R = /^\s*?\[(x|\s)\]/
 const HEADING_R = /^ *(#{1,6}) *([^\n]+?)(?: +#*)?(?:\n *)*(?:\n|$)/
+const HEADING_ATX_COMPLIANT_R =
+  /^ *(#{1,6}) +([^\n]+?)(?: +#*)?(?:\n *)*(?:\n|$)/
 const HEADING_SETEXT_R = /^([^\n]+)\n *(=|-){3,} *(?:\n *)+\n/
-
 /**
  * Explanation:
  *
@@ -388,7 +398,7 @@ const HEADING_SETEXT_R = /^([^\n]+)\n *(=|-){3,} *(?:\n *)+\n/
 const HTML_BLOCK_ELEMENT_R =
   /^ *(?!<[a-z][^ >/]* ?\/>)<([a-z][^ >/]*) ?([^>]*)\/{0}>\n?(\s*(?:<\1[^>]*?>[\s\S]*?<\/\1>|(?!<\1)[\s\S])*?)<\/\1>\n*/i
 
-const HTML_CHAR_CODE_R = /&([a-zA-Z]+);/g
+const HTML_CHAR_CODE_R = /&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-fA-F]{1,6});/gi
 
 const HTML_COMMENT_R = /^<!--[\s\S]*?(?:-->)/
 
@@ -418,6 +428,7 @@ const TABLE_CELL_END_TRIM = / *$/
 const TABLE_CENTER_ALIGN = /^ *:-+: *$/
 const TABLE_LEFT_ALIGN = /^ *:-+ *$/
 const TABLE_RIGHT_ALIGN = /^ *-+: *$/
+
 const TEXT_BOLD_R =
   /^([*_])\1((?:\[.*?\][([].*?[)\]]|<.*?>(?:.*?<.*?>)?|`.*?`|~+.*?~+|.)*?)\1\1(?!\1)/
 const TEXT_EMPHASIZED_R =
@@ -427,8 +438,9 @@ const TEXT_STRIKETHROUGHED_R = /^~~((?:\[.*?\]|<.*?>(?:.*?<.*?>)?|`.*?`|.)*?)~~/
 
 const TEXT_ESCAPED_R = /^\\([^0-9A-Za-z\s])/
 const TEXT_PLAIN_R =
-  /^[\s\S]+?(?=[^0-9A-Z\s\u00c0-\uffff&;.()'"]|\d+\.|\n\n| {2,}\n|\w+:\S|$)/i
-const TRIM_NEWLINES_AND_TRAILING_WHITESPACE_R = /(^\n+|\n+$|\s+$)/g
+  /^[\s\S]+?(?=[^0-9A-Z\s\u00c0-\uffff&#;.()'"]|\d+\.|\n\n| {2,}\n|\w+:\S|$)/i
+
+const TRIMstartING_NEWLINES = /^\n+/
 
 const HTML_LEFT_TRIM_AMOUNT_R = /^([ \t]*)/
 
@@ -652,6 +664,7 @@ const NON_PARAGRAPH_BLOCK_SYNTAXES = [
   CODE_BLOCK_R,
   HEADING_R,
   HEADING_SETEXT_R,
+  HEADING_ATX_COMPLIANT_R,
   HTML_COMMENT_R,
   NP_TABLE_R,
   ORDERED_LIST_ITEM_R,
@@ -1255,24 +1268,28 @@ export function compiler(
   }
 
   function compile(input: string): JSX.Element {
-    let _inline = false
+    input = input.replace(FRONT_MATTER_R, '')
+
+    let inline = false
 
     if (options.forceInline) {
-      _inline = true
+      inline = true
     } else if (!options.forceBlock) {
       /**
        * should not contain any block-level markdown like newlines, lists, headings,
        * thematic breaks, blockquotes, tables, etc
        */
-      _inline = SHOULD_RENDER_AS_BLOCK_R.test(input) === false
+      inline = SHOULD_RENDER_AS_BLOCK_R.test(input) === false
     }
 
     const arr = emitter(
       parser(
-        _inline
+        inline
           ? input
-          : `${input.replace(TRIM_NEWLINES_AND_TRAILING_WHITESPACE_R, '')}\n\n`,
-        { inline: _inline }
+          : `${input.trimEnd().replace(TRIMstartING_NEWLINES, '')}\n\n`,
+        {
+          inline,
+        }
       )
     )
 
@@ -1280,7 +1297,7 @@ export function compiler(
       return arr
     }
 
-    const wrapper = options.wrapper || (_inline ? 'span' : 'div')
+    const wrapper = options.wrapper || (inline ? 'span' : 'div')
     let jsx
 
     if (arr.length > 1 || options.forceWrapper) {
@@ -1302,38 +1319,40 @@ export function compiler(
     return React.createElement(wrapper, { key: 'outer' }, jsx)
   }
 
-  function attrStringToMap(str: string): JSX.IntrinsicAttributes | undefined {
+  function attrStringToMap(str: string): JSX.IntrinsicAttributes {
     const attributes = str.match(ATTR_EXTRACTOR_R)
+    if (!attributes) {
+      return {}
+    }
 
-    return attributes
-      ? attributes.reduce(function (map, raw, index) {
-          const delimiterIdx = raw.indexOf('=')
+    return attributes.reduce(function (map, raw, index) {
+      const delimiterIdx = raw.indexOf('=')
 
-          if (delimiterIdx !== -1) {
-            const key = normalizeAttributeKey(raw.slice(0, delimiterIdx)).trim()
-            const value = unquote(raw.slice(delimiterIdx + 1).trim())
+      if (delimiterIdx !== -1) {
+        const key = normalizeAttributeKey(raw.slice(0, delimiterIdx)).trim()
+        const value = unquote(raw.slice(delimiterIdx + 1).trim())
 
-            const mappedKey = ATTRIBUTE_TO_JSX_PROP_MAP[key] || key
-            const normalizedValue = (map[mappedKey] =
-              attributeValueToJSXPropValue(key, value))
+        const mappedKey = ATTRIBUTE_TO_JSX_PROP_MAP[key] || key
+        const normalizedValue = (map[mappedKey] = attributeValueToJSXPropValue(
+          key,
+          value
+        ))
 
-            if (
-              typeof normalizedValue === 'string' &&
-              (HTML_BLOCK_ELEMENT_R.test(normalizedValue) ||
-                HTML_SELF_CLOSING_ELEMENT_R.test(normalizedValue))
-            ) {
-              map[mappedKey] = React.cloneElement(
-                compile(normalizedValue.trim()),
-                { key: index }
-              )
-            }
-          } else if (raw !== 'style') {
-            map[ATTRIBUTE_TO_JSX_PROP_MAP[raw] || raw] = true
-          }
+        if (
+          typeof normalizedValue === 'string' &&
+          (HTML_BLOCK_ELEMENT_R.test(normalizedValue) ||
+            HTML_SELF_CLOSING_ELEMENT_R.test(normalizedValue))
+        ) {
+          map[mappedKey] = React.cloneElement(compile(normalizedValue.trim()), {
+            key: index,
+          })
+        }
+      } else if (raw !== 'style') {
+        map[ATTRIBUTE_TO_JSX_PROP_MAP[raw] || raw] = true
+      }
 
-          return map
-        }, {})
-      : undefined
+      return map
+    }, {})
   }
 
   /* istanbul ignore next */
@@ -1516,7 +1535,9 @@ export function compiler(
     } as MarkdownToJSX.Rule<{ completed: boolean }>,
 
     heading: {
-      match: blockRegex(HEADING_R),
+      match: blockRegex(
+        options.enforceAtxHeadings ? HEADING_ATX_COMPLIANT_R : HEADING_R
+      ),
       order: Priority.HIGH,
       parse(capture, parse, state) {
         return {
