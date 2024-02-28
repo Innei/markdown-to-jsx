@@ -1459,6 +1459,7 @@ export function compiler(
           content: capture[4],
           lang: capture[2] || undefined,
           type: 'codeBlock',
+          rawAttrs: capture[3],
         }
       },
     },
