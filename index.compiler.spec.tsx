@@ -2981,6 +2981,7 @@ comment -->`)
       </span>
     `)
   })
+
   it('should not fail with lots of \\n in the middle of the text', () => {
     render(
       compiler(
@@ -3067,6 +3068,97 @@ print("hello world")
           </code>
         </pre>
       </div>
+    `)
+  })
+
+  it('#444 switching list formats regression test', () => {
+    render(
+      compiler(
+        `
+1.  One
+2.  Two
+3.  Three
+
+*   Red
+*   Green
+*   Blue
+        `
+      )
+    )
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div>
+        <ol start="1">
+          <li>
+            One
+          </li>
+          <li>
+            Two
+          </li>
+          <li>
+            Three
+          </li>
+        </ol>
+        <ul>
+          <li>
+            Red
+          </li>
+          <li>
+            Green
+          </li>
+          <li>
+            Blue
+          </li>
+        </ul>
+      </div>
+    `)
+  })
+
+  it('#466 list-like syntax inside link regression test', () => {
+    render(
+      compiler(
+        'Hello, I think that [6. Markdown](http://daringfireball.net/projects/markdown/) lets you write content in a really natural way.'
+      )
+    )
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <span>
+        Hello, I think that
+        <a href="http://daringfireball.net/projects/markdown/">
+          6. Markdown
+        </a>
+        lets you write content in a really natural way.
+      </span>
+    `)
+  })
+
+  it('#540 multiline attributes are supported', () => {
+    render(
+      compiler(
+        `<p>
+Item detail
+<span
+  style="
+    color: #fddb67;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 18px;
+    text-decoration-line: underline;
+  "
+  >debug item 1</span
+>
+</p>`
+      )
+    )
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+    <p>
+      Item detail
+      <span style="color: rgb(253, 219, 103); font-size: 11px; font-style: normal; font-weight: 500; line-height: 18px; text-decoration-line: underline;">
+        debug item 1
+      </span>
+    </p>
     `)
   })
 })
