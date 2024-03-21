@@ -221,6 +221,19 @@ describe('inline textual elements', () => {
     `)
   })
 
+  it('should handle emphasized text spanning multiple lines', () => {
+    render(compiler('*Hello\nWorld.*\n'))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <p>
+        <em>
+          Hello
+      World.
+        </em>
+      </p>
+    `)
+  })
+
   it('should handle double-emphasized text', () => {
     render(compiler('**Hello.**'))
 
@@ -228,6 +241,19 @@ describe('inline textual elements', () => {
       <strong>
         Hello.
       </strong>
+    `)
+  })
+
+  it('should handle double-emphasized text spanning multiple lines', () => {
+    render(compiler('**Hello\nWorld.**\n'))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+    <p>
+      <strong>
+        Hello
+    World.
+      </strong>
+    </p>
     `)
   })
 
@@ -240,6 +266,21 @@ describe('inline textual elements', () => {
           Hello.
         </em>
       </strong>
+    `)
+  })
+
+  it('should handle triple-emphasized text spanning multiple lines', () => {
+    render(compiler('***Hello\nWorld.***\n'))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <p>
+        <strong>
+          <em>
+            Hello
+      World.
+          </em>
+        </strong>
+      </p>
     `)
   })
 
@@ -303,6 +344,19 @@ describe('inline textual elements', () => {
     `)
   })
 
+  it('should handle deleted text spanning multiple lines', () => {
+    render(compiler('~~Hello\nWorld.~~\n'))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <p>
+        <del>
+          Hello
+      World.
+        </del>
+      </p>
+    `)
+  })
+
   it('should handle marked text containing other syntax with an equal sign', () => {
     render(compiler('==Foo `==bar` baz.=='))
 
@@ -314,6 +368,19 @@ describe('inline textual elements', () => {
         </code>
         baz.
       </mark>
+    `)
+  })
+
+  it('should handle marked text spanning multiple lines', () => {
+    render(compiler('==Hello\nWorld.==\n'))
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <p>
+        <mark>
+          Hello
+      World.
+        </mark>
+      </p>
     `)
   })
 
@@ -3236,6 +3303,149 @@ describe('footnotes', () => {
       </span>
     `)
   })
+
+  it('should handle multiline footnotes', () => {
+    render(
+      compiler(theredoc`
+        foo[^abc] bar
+
+        [^abc]: Baz
+          line2
+          line3
+
+        After footnotes content
+      `)
+    )
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div>
+        <div>
+          <p>
+            foo
+            <a href="#abc">
+              <sup>
+                abc
+              </sup>
+            </a>
+            bar
+          </p>
+          <p>
+            After footnotes content
+          </p>
+        </div>
+        <footer>
+          <div id="abc">
+            abc: Baz
+        line2
+        line3
+          </div>
+        </footer>
+      </div>
+    `)
+  })
+
+  it('should handle mixed multiline and singleline footnotes', () => {
+    render(
+      compiler(theredoc`
+        a[^a] b[^b] c[^c]
+
+        [^a]: single
+        [^b]: bbbb
+          bbbb
+          bbbb
+        [^c]: single-c
+      `)
+    )
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div>
+        <p>
+          a
+          <a href="#a">
+            <sup>
+              a
+            </sup>
+          </a>
+          b
+          <a href="#b">
+            <sup>
+              b
+            </sup>
+          </a>
+          c
+          <a href="#c">
+            <sup>
+              c
+            </sup>
+          </a>
+        </p>
+        <footer>
+          <div id="a">
+            a: single
+          </div>
+          <div id="b">
+            b: bbbb
+        bbbb
+        bbbb
+          </div>
+          <div id="c">
+            c: single-c
+          </div>
+        </footer>
+      </div>
+    `)
+  })
+
+  it('should handle indented multiline footnote', () => {
+    render(
+      compiler(theredoc`
+        Here's a simple footnote,[^1] and here's a longer one.[^bignote]
+
+        [^1]: This is the first footnote.
+
+        [^bignote]: Here's one with multiple paragraphs and code.
+
+            Indent paragraphs to include them in the footnote.
+
+            \`{ my code }\`
+
+            Add as many paragraphs as you like.
+      `)
+    )
+
+    expect(root.innerHTML).toMatchInlineSnapshot(`
+      <div>
+        <p>
+          Here's a simple footnote,
+          <a href="#1">
+            <sup>
+              1
+            </sup>
+          </a>
+          and here's a longer one.
+          <a href="#bignote">
+            <sup>
+              bignote
+            </sup>
+          </a>
+        </p>
+        <footer>
+          <div id="1">
+            1: This is the first footnote.
+          </div>
+          <div id="bignote">
+            bignote: Here's one with multiple paragraphs and code.
+
+          Indent paragraphs to include them in the footnote.
+            <code>
+              { my code }
+            </code>
+            Add as many paragraphs as you like.
+          </div>
+        </footer>
+      </div>
+      `)
+  })
 })
 
 describe('options.namedCodesToUnicode', () => {
@@ -3798,9 +4008,49 @@ describe('overrides', () => {
   })
 })
 
+it('should remove YAML front matter', () => {
+  render(
+    compiler(theredoc`
+      ---
+      key: value
+      other_key: different value
+      ---
+      Hello.
+    `)
+  )
+
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <span>
+      Hello.
+    </span>
+`)
+})
+
 it('handles a holistic example', () => {
   const md = fs.readFileSync(__dirname + '/fixture.md', 'utf8')
   render(compiler(md))
 
   expect(root.innerHTML).toMatchSnapshot()
+})
+
+it('handles <code> brackets in link text', () => {
+  render(compiler('[`[text]`](https://example.com)'))
+
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <a href="https://example.com">
+      <code>
+        [text]
+      </code>
+    </a>
+  `)
+})
+
+it('handles naked brackets in link text', () => {
+  render(compiler('[[text]](https://example.com)'))
+
+  expect(root.innerHTML).toMatchInlineSnapshot(`
+    <a href="https://example.com">
+      [text]
+    </a>
+  `)
 })
