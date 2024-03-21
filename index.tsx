@@ -1284,7 +1284,7 @@ export enum Priority {
 }
 
 export function compiler(
-  markdown: string,
+  markdown: string = '',
   options: MarkdownToJSX.Options = {}
 ) {
   options.overrides = options.overrides || {}
@@ -2167,7 +2167,7 @@ const Markdown: React.FC<{
   [key: string]: any
   children: string
   options?: MarkdownToJSX.Options
-}> = ({ children, options, ...props }) => {
+}> = ({ children = '', options, ...props }) => {
   return React.cloneElement(
     compiler(children, options),
     props as JSX.IntrinsicAttributes
