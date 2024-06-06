@@ -2,41 +2,56 @@
 <html>
   <head>
     <title>markdown-to-jsx: try it live!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      rel="stylesheet"
+    />
 
-    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-is@16/umd/react-is.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/styled-components@5.2.0/dist/styled-components.min.js"></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@16/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-is@16/umd/react-is.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/styled-components@5.2.0/dist/styled-components.min.js"
+    ></script>
   </head>
 
   <body>
     <div id="root"></div>
 
-<script type="text/plain" id="sample-content">
-# This is Markdown
+    <script type="text/plain" id="sample-content">
+      # This is Markdown
 
-#### You can edit me!
+      #### You can edit me!
 
-[Markdown](http://daringfireball.net/projects/markdown/) lets you write content in a really natural way.
+      [Markdown](http://daringfireball.net/projects/markdown/) lets you write content in a really natural way.
 
-  * You can have lists, like this one
-  * Make things **bold** or *italic*
-  * Embed snippets of `code`
-  * Create [links](/)
-  * ...
+        * You can have lists, like this one
+        * Make things **bold** or *italic*
+        * Embed snippets of `code`
+        * Create [links](/)
+        * ...
 
-<small>Sample content borrowed with thanks from [elm-markdown](http://elm-lang.org/examples/markdown) ❤️</small>
+      <small>Sample content borrowed with thanks from [elm-markdown](http://elm-lang.org/examples/markdown) ❤️</small>
 
-You can even include custom React components if you declare them in the "overrides" option.
+      You can even include custom React components if you declare them in the "overrides" option.
 
-<MyComponent>Isn't that cool?</MyComponent>
+      <MyComponent>Isn't that cool?</MyComponent>
 
 
-```jsx {1,3} {fold}
-'Hello world'
-```
-</script>
+      ```jsx {1,3} {fold}
+      'Hello world'
+      ```
+    </script>
 
     <script src="./markdown-to-jsx.js"></script>
   </body>
