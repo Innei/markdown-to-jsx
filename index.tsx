@@ -6,6 +6,19 @@
  */
 import React from 'react'
 
+/** Remove symmetrical leading and trailing quotes */
+function unquote(str: string) {
+  const first = str[0]
+  if (
+    (first === '"' || first === "'") &&
+    str.length >= 2 &&
+    str[str.length - 1] === first
+  ) {
+    return str.slice(1, -1)
+  }
+  return str
+}
+
 export namespace MarkdownToJSX {
   /**
    * RequireAtLeastOne<{ ... }> <- only requires at least one key
@@ -445,8 +458,7 @@ const LINK_AUTOLINK_BARE_URL_R = /^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/
 const LINK_AUTOLINK_MAILTO_R = /^<([^ >]+@[^ >]+)>/
 const LINK_AUTOLINK_R = /^<([^ >]+:\/[^ >]+)>/
 const CAPTURE_LETTER_AFTER_HYPHEN = /-([a-z])?/gi
-const NP_TABLE_R =
-  /^(.*\|.*)\n(?: *(\|? *[-:]+ *\|[-| :]*)\n((?:.*\|.*\n)*))?\n?/
+const NP_TABLE_R = /^(.*\|?.*)\n *(\|? *[-:]+ *\|[-| :]*)\n((?:.*\|.*\n)*)\n?/
 const PARAGRAPH_R = /^[^\n]+(?:  \n|\n{2,})/
 const REFERENCE_IMAGE_OR_LINK = /^\[([^\]]*)\]:\s+<?([^\s>]+)>?\s*("([^"]*)")?/
 const REFERENCE_IMAGE_R = /^!\[([^\]]*)\] ?\[([^\]]*)\]/
@@ -454,7 +466,9 @@ const REFERENCE_LINK_R = /^\[([^\]]*)\] ?\[([^\]]*)\]/
 const SQUARE_BRACKETS_R = /(\[|\])/g
 const SHOULD_RENDER_AS_BLOCK_R = /(\n|^[-*]\s|^#|^ {2,}|^-{2,}|^>\s)/
 const TAB_R = /\t/g
+const TABLE_SEPARATOR_R = /^ *\| */
 const TABLE_TRIM_PIPES = /(^ *\||\| *$)/g
+const TABLE_CELL_END_TRIM = / *$/
 const TABLE_CENTER_ALIGN = /^ *:-+: *$/
 const TABLE_LEFT_ALIGN = /^ *:-+ *$/
 const TABLE_RIGHT_ALIGN = /^ *-+: *$/
@@ -599,7 +613,7 @@ function generateListRule(h: any, type: LIST_TYPE) {
       // lists can be inline, because they might be inside another list,
       // in which case we can parse with inline scope, but need to allow
       // nested lists inside this inline scope.
-
+      // if (!prevCapture) return null
       const isStartOfLine = LIST_LOOKBEHIND_R.exec(prevCapture!)
       const isListBlock = state.list || (!state.inline && !state.simple)
 
@@ -737,19 +751,6 @@ function containsBlockSyntax(input: string) {
   return BLOCK_SYNTAXES.some(r => r.test(input))
 }
 
-/** Remove symmetrical leading and trailing quotes */
-function unquote(str: string) {
-  const first = str[0]
-  if (
-    (first === '"' || first === "'") &&
-    str.length >= 2 &&
-    str[str.length - 1] === first
-  ) {
-    return str.slice(1, -1)
-  }
-  return str
-}
-
 // based on https://stackoverflow.com/a/18123682/1141611
 // not complete, but probably good enough
 function slugify(str: string) {
@@ -783,25 +784,11 @@ function parseTableAlignCapture(alignCapture: string) {
 function parseTableRow(
   source: string,
   parse: MarkdownToJSX.NestedParser,
-  state: MarkdownToJSX.State,
-  tableOutput: boolean
+  state: MarkdownToJSX.State
 ) {
   const prevInTable = state.inTable
   state.inTable = true
-  let tableRow = source
-    .trim()
-    // isolate situations where a pipe should be ignored (inline code, HTML)
-    .split(/( *(?:`[^`]*`|<.*?>.*?<\/.*?>(?!<\/.*?>)|\\\||\|) *)/)
-    .reduce((nodes, fragment) => {
-      if (fragment.trim() === '|')
-        nodes.push(
-          tableOutput
-            ? { type: 'tableSeparator' }
-            : { type: 'text', text: fragment }
-        )
-      else if (fragment !== '') nodes.push.apply(nodes, parse(fragment, state))
-      return nodes
-    }, [] as MarkdownToJSX.ParserResult[])
+  const tableRow = parse(source.trim(), state)
   state.inTable = prevInTable
 
   const cells = [[]] as MarkdownToJSX.ParserResult[][]
@@ -817,7 +804,7 @@ function parseTableRow(
         node.type === 'text' &&
         (tableRow[i + 1] == null || tableRow[i + 1].type === 'tableSeparator')
       ) {
-        node.content = node.content.trimEnd()
+        node.content = node.content.replace(TABLE_CELL_END_TRIM, '')
       }
       cells[cells.length - 1].push(node)
     }
@@ -839,7 +826,7 @@ function parseTableCells(
   const rowsText = source.trim().split('\n')
 
   return rowsText.map(function (rowText) {
-    return parseTableRow(rowText, parse, state, true)
+    return parseTableRow(rowText, parse, state)
   })
 }
 
@@ -848,27 +835,18 @@ function parseTable(
   parse: MarkdownToJSX.NestedParser,
   state: MarkdownToJSX.State
 ) {
-  /**
-   * The table syntax makes some other parsing angry so as a bit of a hack even if alignment and/or cell rows are missing,
-   * we'll still run a detected first row through the parser and then just emit a paragraph.
-   */
   state.inline = true
-  const align = capture[2] ? parseTableAlign(capture[2]) : []
-  const cells = capture[3] ? parseTableCells(capture[3], parse, state) : []
-  const header = parseTableRow(capture[1], parse, state, !!cells.length)
+  const header = parseTableRow(capture[1], parse, state)
+  const align = parseTableAlign(capture[2])
+  const cells = parseTableCells(capture[3], parse, state)
   state.inline = false
 
-  return cells.length
-    ? {
-        align: align,
-        cells: cells,
-        header: header,
-        type: 'table',
-      }
-    : {
-        children: header,
-        type: 'paragraph',
-      }
+  return {
+    align: align,
+    cells: cells,
+    header: header,
+    type: 'table',
+  }
 }
 
 function getTableStyle(node, colIndex) {
@@ -1112,6 +1090,7 @@ function matchParagraph(
 
   return [match, captured]
 }
+
 export function sanitizeUrl(url: string): string {
   try {
     const decoded = decodeURIComponent(url).replace(/[^A-Za-z0-9/:]/g, '')
@@ -1208,8 +1187,8 @@ function renderNothing() {
   return null
 }
 
-function reactFor(render) {
-  return function patchedRender(
+function reactFor(outputFunc) {
+  return function nestedReactOutput(
     ast: MarkdownToJSX.ParserResult | MarkdownToJSX.ParserResult[],
     state: MarkdownToJSX.State = {}
   ): React.ReactNode[] {
@@ -1224,12 +1203,12 @@ function reactFor(render) {
       for (let i = 0; i < ast.length; i++) {
         state.key = i
 
-        const nodeOut = patchedRender(ast[i], state)
+        const nodeOut = nestedReactOutput(ast[i], state)
         const isString = typeof nodeOut === 'string'
 
         if (isString && lastWasString) {
           result[result.length - 1] += nodeOut
-        } else if (nodeOut !== null) {
+        } else {
           result.push(nodeOut)
         }
 
@@ -1241,7 +1220,7 @@ function reactFor(render) {
       return result
     }
 
-    return render(ast, patchedRender, state)
+    return outputFunc(ast, nestedReactOutput, state)
   }
 }
 
@@ -1891,7 +1870,7 @@ export function compiler(
           <table key={state.key}>
             <thead>
               <tr>
-                {node.header?.map(function generateHeaderCell(content, i) {
+                {node.header.map(function generateHeaderCell(content, i) {
                   return (
                     <th key={i} style={getTableStyle(node, i)}>
                       {output(content, state)}
@@ -1902,7 +1881,7 @@ export function compiler(
             </thead>
 
             <tbody>
-              {node.cells?.map(function generateTableRow(row, i) {
+              {node.cells.map(function generateTableRow(row, i) {
                 return (
                   <tr key={i}>
                     {row.map(function generateTableCell(content, c) {
@@ -1920,6 +1899,23 @@ export function compiler(
         )
       },
     } as MarkdownToJSX.Rule<ReturnType<typeof parseTable>>,
+
+    tableSeparator: {
+      match: function (source, state) {
+        if (!state.inTable) {
+          return null
+        }
+        return TABLE_SEPARATOR_R.exec(source)
+      },
+      order: Priority.HIGH,
+      parse: function () {
+        return { type: 'tableSeparator' }
+      },
+      // These shouldn't be reached, but in case they are, be reasonable:
+      react() {
+        return ' | '
+      },
+    },
 
     text: {
       // Here we look for anything followed by non-symbols,
