@@ -1208,8 +1208,8 @@ function renderNothing() {
   return null
 }
 
-function reactFor(outputFunc) {
-  return function nestedReactOutput(
+function reactFor(render) {
+  return function patchedRender(
     ast: MarkdownToJSX.ParserResult | MarkdownToJSX.ParserResult[],
     state: MarkdownToJSX.State = {}
   ): React.ReactNode[] {
@@ -1224,12 +1224,12 @@ function reactFor(outputFunc) {
       for (let i = 0; i < ast.length; i++) {
         state.key = i
 
-        const nodeOut = nestedReactOutput(ast[i], state)
+        const nodeOut = patchedRender(ast[i], state)
         const isString = typeof nodeOut === 'string'
 
         if (isString && lastWasString) {
           result[result.length - 1] += nodeOut
-        } else {
+        } else if (nodeOut !== null) {
           result.push(nodeOut)
         }
 
@@ -1241,7 +1241,7 @@ function reactFor(outputFunc) {
       return result
     }
 
-    return outputFunc(ast, nestedReactOutput, state)
+    return render(ast, patchedRender, state)
   }
 }
 
