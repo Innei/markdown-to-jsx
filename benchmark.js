@@ -1,10 +1,10 @@
 import BenchTable from 'benchtable'
 import cliProgress from 'cli-progress'
 import * as fs from 'fs'
-import ReactMarkdown from 'react-markdown'
 import SimpleMarkdown from 'simple-markdown'
 import MarkdownIt from 'markdown-it'
-import { compiler } from './dist'
+import { compiler as latestCompiler } from 'markdown-to-jsx-latest'
+import { compiler } from './dist/index.module.js'
 
 const mdIt = new MarkdownIt()
 const suite = new BenchTable()
@@ -20,13 +20,19 @@ const bar = new cliProgress.SingleBar(
 let totalCycles
 
 // add tests
-suite
-  .addFunction('markdown-to-jsx', input => compiler(input))
-  .addFunction('react-markdown', input => new ReactMarkdown({ source: input }))
-  .addFunction('simple-markdown', input =>
-    SimpleMarkdown.defaultReactOutput(SimpleMarkdown.defaultBlockParse(input))
-  )
-  .addFunction('markdown-it', input => mdIt.render(input))
+const evals = suite
+  .addFunction('markdown-to-jsx (next)', input => compiler(input))
+  .addFunction('markdown-to-jsx (latest)', input => latestCompiler(input))
+
+if (process.argv.includes('--all')) {
+  evals
+    .addFunction('simple-markdown', input =>
+      SimpleMarkdown.defaultReactOutput(SimpleMarkdown.defaultBlockParse(input))
+    )
+    .addFunction('markdown-it', input => mdIt.render(input))
+}
+
+evals
   .addInput('simple markdown string', ['_Hello_ **world**!'])
   .addInput('large markdown string', [fixture])
   .on('start', () => {

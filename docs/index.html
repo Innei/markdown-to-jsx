@@ -2,57 +2,83 @@
 <html>
   <head>
     <title>markdown-to-jsx: try it live!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono&display=swap"
       rel="stylesheet"
     />
-
+    <link
+      href="https://unpkg.com/katex@0.16.9/dist/katex.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/styles/nord.min.css"
+    />
     <script
       crossorigin
-      src="https://unpkg.com/react@16/umd/react.production.min.js"
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
     ></script>
     <script
       crossorigin
-      src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
     ></script>
     <script
       crossorigin
-      src="https://unpkg.com/react-is@16/umd/react-is.production.min.js"
+      src="https://unpkg.com/styled-components@6/dist/styled-components.min.js"
     ></script>
     <script
       crossorigin
-      src="https://unpkg.com/styled-components@5.2.0/dist/styled-components.min.js"
+      src="https://unpkg.com/katex@0.16.9/dist/katex.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js"
     ></script>
   </head>
 
   <body>
     <div id="root"></div>
 
+    <!-- prettier-ignore -->
     <script type="text/plain" id="sample-content">
-      # This is Markdown
+# This is Markdown
 
-      #### You can edit me!
+✨ You can edit me! ✨
 
-      [Markdown](http://daringfireball.net/projects/markdown/) lets you write content in a really natural way.
+[Markdown](http://daringfireball.net/projects/markdown/) lets you write content in a really natural way.
 
-        * You can have lists, like this one
-        * Make things **bold** or *italic*
-        * Embed snippets of `code`
-        * Create [links](/)
-        * ...
+  * You can have lists, like this one
+  * Make things **bold** or *italic*
+  * Embed snippets of `code`
+  * Create [links](/)
+  * ...
 
-      <small>Sample content borrowed with thanks from [elm-markdown](http://elm-lang.org/examples/markdown) ❤️</small>
+<small>Sample content borrowed with thanks from [elm-markdown](http://elm-lang.org/examples/markdown) ❤️</small>
 
-      You can even include custom React components if you declare them in the "overrides" option.
+> [!Tip]
+> Normal and "alert" blockquotes are possible. Use `renderRule` for more control if needed. Classes like `.markdown-alert-[type]` are provided as styling hooks.
 
-      <MyComponent>Isn't that cool?</MyComponent>
+Custom handling of code blocks (or any rule!) is possible with the [`renderRule` option](https://github.com/quantizor/markdown-to-jsx#optionsrenderrule). For example, LaTeX support via [`@matejmazur/react-katex`](https://www.npmjs.com/package/@matejmazur/react-katex):
 
+```latex
+\mathbb{N} = \{ a \in \mathbb{Z} : a > 0 \}
+```
 
-      ```jsx {1,3} {fold}
-      'Hello world'
-      ```
-    </script>
+Or any other typical language, using [`highlight.js`](https://highlightjs.org/):
 
-    <script src="./markdown-to-jsx.js"></script>
+```javascript
+function App() {
+  return <div>Hello world!</div>;
+}
+```
+
+You can even include custom React **bold** if you declare them in the [`overrides` option](https://github.com/quantizor/markdown-to-jsx/blob/main/README.md#optionsoverrides---rendering-arbitrary-react-components).
+
+<MyComponent>Isn't that cool?</MyComponent>
+</script>
+
+    <script src="./markdown-to-jsx-yet.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import Markdown from './index'
-import React from 'react'
-import ReactDOM from 'react-dom'
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 
 const root = document.body.appendChild(document.createElement('div'))
 
@@ -30,7 +30,7 @@ it('handles a no-children scenario', () => {
 })
 
 it('accepts options', () => {
-  class FakeParagraph extends React.Component {
+  class FakeParagraph extends React.Component<React.PropsWithChildren<{}>> {
     render() {
       return <p className="foo">{this.props.children}</p>
     }

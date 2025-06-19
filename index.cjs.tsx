@@ -1,27 +1,8 @@
-import Markdown, {
-  compiler,
-  Priority,
-  anyScopeRegex,
-  blockRegex,
-  inlineRegex,
-  parseBlock,
-  parseInline,
-  parseSimpleInline,
-  parseCaptureInline,
-  sanitizeUrl,
-  simpleInlineRegex,
-} from './index'
-Object.assign(Markdown, {
-  compiler,
-  Priority,
-  anyScopeRegex,
-  blockRegex,
-  inlineRegex,
-  parseBlock,
-  parseInline,
-  parseSimpleInline,
-  parseCaptureInline,
-  sanitizeUrl,
-  simpleInlineRegex,
-})
-export default Markdown
+import Markdown, { compiler, RuleType } from './index.tsx'
+
+Object.assign(Markdown, { compiler, RuleType })
+
+export default Markdown as typeof Markdown & {
+  compiler: typeof compiler
+  RuleType: typeof RuleType
+}

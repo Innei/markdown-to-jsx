@@ -1,10 +1,17 @@
-// @ts-nocheck
 /* @jsx React.createElement */
-import { lighten, rgba } from 'polished'
-import React from 'react'
-import ReactDOM from 'react-dom'
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 import styled, { createGlobalStyle, css, CSSProp } from 'styled-components'
-import Markdown from './'
+import TeX from '@matejmazur/react-katex'
+import Markdown, { MarkdownToJSX, RuleType } from './index'
+
+declare global {
+  interface Window {
+    hljs: {
+      highlightElement: (element: HTMLElement) => void
+    }
+  }
+}
 
 declare module 'react' {
   interface Attributes {
@@ -22,32 +29,11 @@ function TryItLive() {
   return (
     <main>
       <GlobalStyles />
-      <a
-        href="https://support.eji.org/give/153413/#!/donation/checkout"
-        rel="noopener noreferrer"
-        target="_blank"
-        style={{
-          background: '#000',
-          color: '#fff',
-          textAlign: 'center',
-          textDecoration: 'none',
-          fontSize: '16px',
-          padding: '0.5em',
-          margin: '-3rem -3rem 2em',
-          position: 'sticky',
-          top: 0,
-        }}
-      >
-        #BlackLivesMatter ✊🏿{' '}
-        <span style={{ textDecoration: 'underline' }}>
-          Support the Equal Justice Initiative
-        </span>
-      </a>
 
       <Header>
         <a
           target="_blank"
-          href="https://github.com/probablyup/markdown-to-jsx"
+          href="https://github.com/quantizor/markdown-to-jsx"
           title="Check out the markdown-to-jsx source code"
           rel="noopener noreferrer"
         >
@@ -70,7 +56,7 @@ function TryItLive() {
           See the{' '}
           <a
             target="_blank"
-            href="https://github.com/probablyup/markdown-to-jsx/blob/main/README.md"
+            href="https://github.com/quantizor/markdown-to-jsx/blob/main/README.md"
             rel="noopener noreferrer"
           >
             project README
@@ -90,7 +76,7 @@ function TryItLive() {
   )
 }
 
-const COLOR_ACCENT = 'rgba(255, 255, 255, 0.5)'
+const COLOR_ACCENT = 'wheat'
 const COLOR_BODY = '#fefefe'
 
 const GlobalStyles = createGlobalStyle`
@@ -110,9 +96,9 @@ const GlobalStyles = createGlobalStyle`
 	}
 
 	html {
-		background: #222;
+		background: #1a1c23;
 		color: ${COLOR_BODY};
-		font-family: 'Source Sans Pro', Helvetica Neue, Helvetica, sans-serif;
+		font-family: Inter, Helvetica Neue, Helvetica, sans-serif;
 		font-size: 14px;
 		line-height: 1.5;
 	}
@@ -124,6 +110,7 @@ const GlobalStyles = createGlobalStyle`
 	h5,
 	h6 {
 		margin: 0 0 1rem;
+    text-wrap: balance;
 	}
 
 	h1 {
@@ -156,18 +143,25 @@ const GlobalStyles = createGlobalStyle`
 
 		&:hover,
 		&:focus {
-			color: ${rgba(COLOR_ACCENT, 0.75)};
+			color: color-mix(in srgb, ${COLOR_ACCENT} 75%, transparent);
 		}
 	}
 
+  :root {
+    --code-bg: color-mix(in srgb, ${COLOR_ACCENT} 15%, transparent);
+  }
+
 	code {
-		background: ${rgba(COLOR_ACCENT, 0.05)};
+    background: var(--code-bg) !important;
+    border-radius: 2px;
 		display: inline-block;
-		padding: 0 2px;
+    font-family: 'Jetbrains Mono', Consolas, Monaco, monospace;
+    font-size: 0.9em;
+		padding: 0 4px;
+    text-decoration: inherit;
 	}
 
 	pre code {
-		background: transparent;
 		border: 0;
 		display: block;
 		padding: 1em;
@@ -183,6 +177,65 @@ const GlobalStyles = createGlobalStyle`
 			padding: 3rem;
 		}
 	}
+
+  p {
+    text-wrap: balance;
+  }
+
+  blockquote {
+    border-left: 1px solid #333;
+    margin: 1.5em 0;
+    padding-left: 1em;
+
+    &.markdown-alert-tip header {
+      color: limegreen;
+
+      &::before {
+        content: '★';
+        margin-right: 4px;
+      }
+    }
+
+    &.markdown-alert-note header {
+      color: cornflowerblue;
+
+      &::before {
+        content: 'ⓘ';
+        margin-right: 4px;
+      }
+    }
+
+    &.markdown-alert-important header {
+      color: darkorchid;
+
+      &::before {
+        content: '❕';
+        margin-right: 4px;
+      }
+    }
+
+    &.markdown-alert-warning header {
+      color: gold;
+
+      &::before {
+        content: '⚠️';
+        margin-right: 4px;
+      }
+    }
+
+    &.markdown-alert-caution header {
+      color: red;
+
+      &::before {
+        content: '🛑';
+        margin-right: 4px;
+      }
+    }
+
+    header + * {
+      margin-top: 0.25em;
+    }
+  }
 `
 
 const Header = styled.header`
@@ -196,10 +249,10 @@ const Header = styled.header`
 `
 
 const Description = styled.p`
-  font-size: 18px;
+  font-size: 16px;
   margin-left: auto;
   margin-right: auto;
-  max-width: 60vw;
+  max-width: 100ch;
 
   h1,
   h2 {
@@ -220,7 +273,7 @@ const Description = styled.p`
 `
 
 const LearnMore = styled.p`
-  color: ${lighten(0.2, COLOR_BODY)};
+  color: color-mix(in srgb, ${COLOR_BODY} 20%, white);
 `
 
 const sharedCss = css`
@@ -246,17 +299,20 @@ const Demo = styled.section`
 
 const Textarea = styled.textarea`
   ${sharedCss};
-  background: ${rgba(COLOR_ACCENT, 0.05)};
+  background: color-mix(in srgb, ${COLOR_ACCENT} 10%, transparent);
   border: 0;
   color: inherit;
   position: sticky;
   top: 0;
-  font-family: 'Source Code Pro', Consolas, Monaco, monospace;
+  flex-shrink: 0;
+  font-family: 'Jetbrains Mono', Consolas, Monaco, monospace;
   font-size: inherit;
   max-height: 100vh;
+  resize: vertical;
 
   @media all and (max-width: 500px) {
-    height: 300px;
+    field-sizing: content;
+    max-height: 300px;
     position: relative;
   }
 `
@@ -265,24 +321,29 @@ const Compiled = styled.div`
   ${sharedCss};
   padding-left: 2rem;
   padding-right: 1rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
   overflow: auto;
   overflow-x: hidden;
 `
 
 const ShinyButton = styled.button`
-  background: #444;
-  color: #ddd;
+  background: color-mix(in srgb, ${COLOR_ACCENT} 50%, black);
+  border: 1px solid color-mix(in srgb, ${COLOR_ACCENT} 50%, transparent);
+  border-radius: 2px;
+  color: #fff;
   cursor: pointer;
+  padding: 0.25em 0.75em;
   font: inherit;
   transition: background 200ms ease;
 
   &:hover,
   &:focus {
-    background: #222;
+    background: ${COLOR_ACCENT};
   }
 
   &:active {
-    background: #000;
+    background: color-mix(in srgb, ${COLOR_ACCENT} 80%, black);
   }
 `
 
@@ -297,12 +358,41 @@ function MyComponent(props) {
   )
 }
 
+function SyntaxHighlightedCode(props) {
+  const ref = React.useRef<HTMLElement | null>(null)
+
+  React.useEffect(() => {
+    if (ref.current && props.className?.includes('lang-') && window.hljs) {
+      window.hljs.highlightElement(ref.current)
+
+      // hljs won't reprocess the element unless this attribute is removed
+      ref.current.removeAttribute('data-highlighted')
+    }
+  }, [props.className, props.children])
+
+  return <code {...props} ref={ref} />
+}
+
 const options = {
   overrides: {
+    code: SyntaxHighlightedCode,
     MyComponent: {
       component: MyComponent,
     },
   },
-}
+  renderRule(defaultOutput, node, renderChildren, state) {
+    if (node.type === RuleType.codeBlock) {
+      if (node.lang === 'latex') {
+        return (
+          <TeX as="div" key={state.key} style={{ margin: '1.5em 0' }}>
+            {String.raw`${node.text}`}
+          </TeX>
+        )
+      }
+    }
+
+    return defaultOutput()
+  },
+} as MarkdownToJSX.Options
 
 ReactDOM.render(<TryItLive />, document.getElementById('root'))

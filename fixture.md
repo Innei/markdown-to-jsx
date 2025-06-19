@@ -1,3 +1,7 @@
+---
+draft: false
+date: 2024-01-15
+---
 Markdown: Syntax
 ================
 
@@ -741,7 +745,7 @@ escape it:
 
 <h3 id="code">Code</h3>
 
-To indicate a span of code, wrap it with backtick quotes (`` ` ``).
+To indicate a span of code, wrap it with backtick quotes (`\``).
 Unlike a pre-formatted code block, a code span indicates code within a
 normal paragraph. For example:
 

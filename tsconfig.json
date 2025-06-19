@@ -1,16 +1,17 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "declaration": true,
-    "esModuleInterop": true,
+    // Disable because enabling this option can also force consuming libraries to enable it
+    "esModuleInterop": false,
     "incremental": true,
     "jsx": "react",
     "module": "ESNext",
-    "strictNullChecks": true,
     "moduleResolution": "node",
+    "noEmit": true,
     "outDir": "./dist",
+    "preserveConstEnums": true,
     "target": "ESNext"
   },
-  "files": [
-    "index.tsx"
-  ]
+  "files": ["index.tsx"]
 }
