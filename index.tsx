@@ -1987,10 +1987,7 @@ export function compiler(
     },
 
     [RuleType.textBolded]: {
-      match: (source, state, prevCapturedString) => {
-        console.log('match', source, state, prevCapturedString)
-        return simpleInlineRegex(TEXT_BOLD_R)(source, state)
-      },
+      match: simpleInlineRegex(TEXT_BOLD_R),
       order: Priority.MED,
       parse(capture, parse, state) {
         return {
